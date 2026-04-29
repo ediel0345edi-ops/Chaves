@@ -3,102 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes, viewport-fit=cover">
-    <title>Elite OS | Global Sync</title>
+    <title>Elite OS | Nexus Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
             --primary: #007bff; --bg: #010103; 
-            --neon: 0 0 20px rgba(0, 123, 255, 0.4);
-            --transition-speed: 2s; 
+            --neon: 0 0 15px rgba(0, 123, 255, 0.3);
         }
 
-        /* TEMAS */
-        [data-theme="matrix"] { --primary: #00ff41; --bg: #000; --neon: 0 0 20px rgba(0, 255, 65, 0.4); }
-        [data-theme="cyber"] { --primary: #ff007f; --bg: #0d001a; --neon: 0 0 20px rgba(255, 0, 127, 0.4); }
-        [data-theme="blood"] { --primary: #ff0000; --bg: #0a0000; --neon: 0 0 20px rgba(255, 0, 0, 0.4); }
-        [data-theme="ocean"] { --primary: #00d4ff; --bg: #000b1a; --neon: 0 0 20px rgba(0, 212, 255, 0.4); }
-        [data-theme="lava"] { --primary: #ff4500; --bg: #1a0800; --neon: 0 0 20px rgba(255, 69, 0, 0.4); }
-        [data-theme="toxic"] { --primary: #adff2f; --bg: #050a00; --neon: 0 0 20px rgba(173, 255, 47, 0.4); }
-        [data-theme="amethyst"] { --primary: #9d00ff; --bg: #05000a; --neon: 0 0 20px rgba(157, 0, 255, 0.4); }
-        [data-theme="void"] { --primary: #ffffff; --bg: #000000; --neon: 0 0 25px rgba(255, 255, 255, 0.5); }
+        [data-theme="matrix"] { --primary: #00ff41; --bg: #000; }
+        [data-theme="cyber"] { --primary: #ff007f; --bg: #0d001a; }
+        [data-theme="blood"] { --primary: #ff0000; --bg: #0a0000; }
+        [data-theme="ocean"] { --primary: #00d4ff; --bg: #000b1a; }
+        [data-theme="lava"] { --primary: #ff4500; --bg: #1a0800; }
+        [data-theme="toxic"] { --primary: #adff2f; --bg: #050a00; }
+        [data-theme="amethyst"] { --primary: #9d00ff; --bg: #05000a; }
+        [data-theme="gold"] { --primary: #ffcc00; --bg: #0f0a00; }
+        [data-theme="forest"] { --primary: #2ecc71; --bg: #000f05; }
+        [data-theme="void"] { --primary: #ffffff; --bg: #000000; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body, html { height: 100%; width: 100%; background: var(--bg); color: #fff; overflow: hidden; position: fixed; transition: background var(--transition-speed) ease-in-out; }
+        body, html { height: 100%; width: 100%; background: var(--bg); color: #fff; overflow: hidden; position: fixed; transition: background 0.8s ease; }
 
-        #bg-custom { position: fixed; inset: 0; z-index: -1; object-fit: cover; width: 100%; height: 100%; opacity: 0.4; pointer-events: none; }
+        #bg-custom { position: fixed; inset: 0; z-index: -1; object-fit: cover; width: 100%; height: 100%; opacity: 0.35; pointer-events: none; }
         #starCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); color: white; padding: 12px 25px; border-radius: 50px; font-weight: bold; z-index: 100000; box-shadow: var(--neon); transition: 0.8s; border: 1px solid var(--primary); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); color: white; padding: 12px 25px; border-radius: 50px; font-weight: bold; z-index: 100000; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--primary); font-size: 11px; letter-spacing: 1px; }
         #toast.show { top: 30px; }
 
-        #fs-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
-        #fs-img { max-width: 95%; max-height: 90%; border-radius: 10px; box-shadow: var(--neon); }
+        #fs-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        #fs-img { max-width: 95%; max-height: 90%; border: 1px solid var(--primary); border-radius: 10px; }
 
-        .screen { position: absolute; inset: 0; padding: 20px; padding-bottom: 100px; transition: 0.8s ease-in-out; visibility: hidden; opacity: 0; z-index: 10; transform: scale(1.05); }
-        .screen-active { visibility: visible; opacity: 1; z-index: 20; transform: scale(1); }
+        .screen { position: absolute; inset: 0; padding: 20px; padding-bottom: 110px; visibility: hidden; opacity: 0; z-index: 10; transition: 0.4s; }
+        .screen-active { visibility: visible; opacity: 1; z-index: 20; animation: fadeIn 0.5s ease forwards; }
 
-        #chat-msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 10px; z-index: 30; gap: 12px; scroll-behavior: smooth; }
-        .msg-row { display: flex; gap: 10px; margin: 4px 0; align-items: flex-end; max-width: 85%; }
+        #chat-msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding: 10px; gap: 15px; scroll-behavior: smooth; }
+        .msg-row { display: flex; gap: 10px; align-items: flex-end; max-width: 85%; animation: fadeIn 0.3s ease; }
         .row-me { align-self: flex-end; flex-direction: row-reverse; }
         
-        .chat-avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
-        .msg-content { padding: 10px 14px; border-radius: 18px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); font-size: 14px; word-break: break-word; }
-        .row-me .msg-content { background: var(--primary); color: #fff; box-shadow: var(--neon); border: none; }
-        .msg-time { font-size: 8px; opacity: 0.5; margin-top: 4px; text-align: right; }
+        .chat-avatar { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--primary); flex-shrink: 0; object-fit: cover; background: #222; }
+        
+        .msg-content { padding: 10px 14px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); backdrop-filter: blur(8px); }
+        .row-me .msg-content { border-color: var(--primary); background: rgba(0, 123, 255, 0.15); }
+        
+        .msg-user-label { font-size: 9px; font-weight: 900; color: var(--primary); margin-bottom: 3px; display: block; }
+        .msg-text { font-size: 14px; color: #fff; word-break: break-word; }
+        .msg-time { font-size: 8px; opacity: 0.4; margin-top: 5px; text-align: right; }
 
-        .input-area { position: fixed; bottom: 85px; left: 10px; right: 10px; display: flex; gap: 8px; align-items: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 10px 18px; border-radius: 40px; z-index: 100; border: 1px solid var(--primary); }
-        #msgInput { flex: 1; background: none; border: none; color: white; outline: none; font-size: 16px; }
+        .input-area { position: fixed; bottom: 85px; left: 15px; right: 15px; display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); padding: 8px 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        #msgInput { flex: 1; background: none; border: none; color: white; outline: none; font-size: 15px; height: 40px; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.6); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-btn { font-size: 24px; opacity: 0.3; transition: 0.4s; cursor: pointer; }
-        .nav-btn.active { opacity: 1; color: var(--primary); text-shadow: var(--neon); transform: translateY(-3px); }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 1000; }
+        .nav-btn { font-size: 22px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .nav-btn.active { opacity: 1; color: var(--primary); transform: scale(1.1); }
     </style>
 </head>
 <body data-theme="default">
 
-<div id="toast">✨ <span id="theme-label">SISTEMA ONLINE</span></div>
-<div id="fs-overlay" onclick="this.style.display='none'">
-    <img id="fs-img" src="">
-</div>
-
+<div id="toast">✨ <span id="theme-label">INICIANDO...</span></div>
+<div id="fs-overlay" onclick="this.style.display='none'"><img id="fs-img" src=""></div>
 <img id="bg-custom" src="">
 <canvas id="starCanvas"></canvas>
 
 <div class="app-container">
     <div id="home-screen" class="screen screen-active">
-        <h1 style="font-size: 42px; font-weight: 900; margin-top: 60px;">Elite OS</h1>
-        <p style="opacity: 0.4; letter-spacing: 3px; font-size: 10px; margin-bottom: 50px;">GLOBAL ENCRYPTION SYSTEM</p>
-        <div onclick="navigateTo('chat-screen')" style="background: rgba(255,255,255,0.03); border: 1px solid var(--primary); padding: 60px 20px; border-radius:35px; text-align: center; cursor:pointer;">
-            <h2 style="color: var(--primary); letter-spacing: 2px;">ENTRAR NA REDE</h2>
+        <h1 style="font-size: 42px; font-weight: 900; margin-top: 60px; color: var(--primary);">Elite OS</h1>
+        <p style="opacity: 0.4; letter-spacing: 5px; font-size: 10px; margin-bottom: 50px;">NEXUS ONLINE</p>
+        <div onclick="navigateTo('chat-screen')" style="border: 1px solid var(--primary); padding: 50px 20px; border-radius:30px; text-align: center; background: rgba(0,123,255,0.05);">
+            <h2 style="color: var(--primary); letter-spacing: 2px; font-size: 16px;">ABRIR TERMINAL</h2>
         </div>
-        <button onclick="changeTheme()" style="margin-top:20px; width:100%; padding:20px; background:none; border-radius:20px; color:white; border:1px solid rgba(255,255,255,0.1); font-weight:bold;">ALTERAR PROTOCOLO VISUAL</button>
+        <button onclick="changeTheme()" style="margin-top:20px; width:100%; padding:18px; background:none; border-radius:15px; color:white; border:1px solid rgba(255,255,255,0.1); font-weight:bold;">MUDAR PROTOCOLO</button>
     </div>
 
     <div id="chat-screen" class="screen" style="display:flex; flex-direction:column;">
-        <div style="padding-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:900; color: var(--primary);">SALA_GLOBAL</span>
-            <button onclick="window.location.reload()" style="background:none; border:none; color:white; opacity:0.4;">RE-SYNC</button>
+        <div style="padding-bottom:10px; display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <span style="font-weight:900; color: var(--primary); font-size: 10px;">SALA_SYNC</span>
+            <button onclick="syncChat()" style="background:none; border:none; color:var(--primary); font-size: 10px;">RESET_SYNC</button>
         </div>
         <div id="chat-msgs"></div>
         <div class="input-area">
-            <label for="chatMedia" style="font-size:20px; cursor:pointer; opacity:0.7;">📎</label>
-            <input type="file" id="chatMedia" hidden accept="image/*,video/*">
-            <input type="text" id="msgInput" placeholder="Comando...">
-            <button id="btnEnviar" style="background:var(--primary); width:42px; height:42px; border-radius:50%; border:none; color:white;">➤</button>
+            <label for="chatMedia" style="font-size:20px; cursor:pointer;">🖼️</label>
+            <input type="file" id="chatMedia" hidden accept="image/*">
+            <input type="text" id="msgInput" placeholder="Enviar comando...">
+            <button id="btnEnviar" style="background:var(--primary); width:38px; height:38px; border-radius:50%; border:none; color:white;">➤</button>
         </div>
     </div>
 
     <div id="profile-screen" class="screen">
-        <h1>Identidade</h1>
         <center>
-            <div style="position: relative; width: 130px; height: 130px; margin: 30px;">
+            <div style="position: relative; width: 120px; height: 120px; margin-top: 50px;">
                 <img id="profImg" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:2px solid var(--primary); object-fit:cover;">
                 <label for="pfpInput" style="position:absolute; bottom:5px; right:5px; background:var(--primary); padding:10px; border-radius:50%; cursor:pointer;">📷</label>
                 <input type="file" id="pfpInput" hidden accept="image/*">
             </div>
-            <input type="text" id="nameInput" placeholder="Codinome" style="width:100%; padding:18px; background:rgba(255,255,255,0.05); border-radius:18px; color:white; border:1px solid var(--primary); margin-bottom:20px; outline:none; text-align:center;">
-            <button onclick="saveProfile()" style="width:100%; padding:18px; background:var(--primary); border-radius:18px; color:white; font-weight:900; border:none;">SALVAR</button>
-            <button onclick="document.getElementById('bgInput').click()" style="margin-top:15px; width:100%; padding:15px; background:none; border:1px solid rgba(255,255,255,0.1); border-radius:18px; color:white;">MUDAR FUNDO</button>
+            <input type="text" id="nameInput" placeholder="Seu Codinome" style="width:100%; padding:16px; background:rgba(255,255,255,0.05); border-radius:15px; color:white; border:1px solid rgba(255,255,255,0.1); margin-top:30px; text-align:center; outline:none;">
+            <button onclick="saveProfile()" style="width:100%; padding:16px; background:var(--primary); border-radius:15px; color:white; font-weight:bold; border:none; margin-top:20px;">SALVAR DADOS</button>
+            <button onclick="document.getElementById('bgInput').click()" style="margin-top:15px; width:100%; padding:14px; background:none; border:1px solid rgba(255,255,255,0.1); border-radius:15px; color:white;">TROCAR FUNDO</button>
             <input type="file" id="bgInput" hidden accept="image/*">
         </center>
     </div>
@@ -125,42 +127,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    let myId = localStorage.getItem('elite_id') || 'AG_' + Math.floor(Math.random()*99999);
+    const myId = localStorage.getItem('elite_id') || 'AG_' + Math.random().toString(36).substr(2, 5);
     localStorage.setItem('elite_id', myId);
 
-    // FUNÇÃO PARA ENVIAR TUDO (Trata nulos para o Firebase não recusar)
-    const enviarParaFirebase = async (txt = "", media = "") => {
-        try {
-            await addDoc(collection(db, "mensagens"), {
-                uid: myId,
-                texto: txt || "",
-                media: media || "",
-                usuario: localStorage.getItem('elite_nome') || "Agente",
-                pfp: localStorage.getItem('elite_pfp') || "",
-                createdAt: serverTimestamp(),
-                hora: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-            });
-        } catch (e) {
-            console.error(e);
-            showToast("ERRO DE CONEXÃO");
-        }
-    };
-
-    document.getElementById('btnEnviar').onclick = () => {
-        const i = document.getElementById('msgInput');
-        if(i.value.trim()) {
-            enviarParaFirebase(i.value.trim(), "");
-            i.value = "";
-        }
-    };
-
-    document.getElementById('msgInput').onkeypress = (e) => {
-        if(e.key === 'Enter') document.getElementById('btnEnviar').click();
-    };
-
-    // COMPRESSÃO DE IMAGENS (Essencial para o Firestore aceitar a String Base64)
-    const processarArquivo = (file, maxW = 400) => {
+    // COMPRESSOR MELHORADO
+    const processImg = (file, quality = 0.6, maxWidth = 600) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -169,135 +140,166 @@
                 img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const scale = maxW / img.width;
-                    canvas.width = maxW;
+                    const scale = maxWidth / img.width;
+                    canvas.width = maxWidth;
                     canvas.height = img.height * scale;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.5)); // Qualidade reduzida para caber no banco
+                    resolve(canvas.toDataURL('image/jpeg', quality));
                 };
             };
         });
     };
 
+    // ENVIO DE MENSAGENS E FOTOS
+    const sendMessage = async (text = "", img = "") => {
+        if (!text && !img) return;
+        showToast("ENVIANDO...");
+        try {
+            await addDoc(collection(db, "mensagens"), {
+                uid: myId,
+                texto: text,
+                media: img,
+                usuario: localStorage.getItem('elite_nome') || "Agente",
+                pfp: localStorage.getItem('elite_pfp') || "",
+                createdAt: serverTimestamp(),
+                hora: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+            });
+        } catch (e) {
+            console.error(e);
+            showToast("ERRO AO ENVIAR");
+        }
+    };
+
+    document.getElementById('btnEnviar').onclick = () => {
+        const input = document.getElementById('msgInput');
+        if (input.value.trim()) {
+            sendMessage(input.value.trim(), "");
+            input.value = "";
+        }
+    };
+
     document.getElementById('chatMedia').onchange = async (e) => {
         const file = e.target.files[0];
-        if(!file) return;
-        showToast("PROCESSANDO MÍDIA...");
-        const mediaFinal = await processarArquivo(file);
-        await enviarParaFirebase("", mediaFinal);
+        if (file) {
+            const base64 = await processImg(file, 0.5, 500);
+            await sendMessage("", base64);
+        }
     };
 
-    // ESCUTAR MENSAGENS E ROLAR
-    const q = query(collection(db, "mensagens"), orderBy("createdAt", "desc"), limit(40));
-    onSnapshot(q, (snap) => {
-        const area = document.getElementById('chat-msgs');
-        let lista = [];
-        snap.forEach(doc => { 
-            const data = doc.data();
-            if(data.createdAt) lista.push(data); 
+    // SYNC DO CHAT (TEMPO REAL)
+    let unsub = null;
+    window.syncChat = () => {
+        if (unsub) unsub();
+        const q = query(collection(db, "mensagens"), orderBy("createdAt", "desc"), limit(30));
+        unsub = onSnapshot(q, (snap) => {
+            const area = document.getElementById('chat-msgs');
+            area.innerHTML = "";
+            let msgs = [];
+            snap.forEach(doc => msgs.push(doc.data()));
+            msgs.reverse().forEach(m => {
+                const isMe = m.uid === myId;
+                const div = document.createElement('div');
+                div.className = `msg-row ${isMe ? 'row-me' : ''}`;
+                div.innerHTML = `
+                    <img class="chat-avatar" src="${m.pfp || 'https://via.placeholder.com/150'}">
+                    <div class="msg-content">
+                        <span class="msg-user-label">${m.usuario}</span>
+                        ${m.texto ? `<div class="msg-text">${m.texto}</div>` : ''}
+                        ${m.media ? `<img src="${m.media}" style="width:100%; border-radius:10px; margin-top:5px;" onclick="zoomImg('${m.media}')">` : ''}
+                        <div class="msg-time">${m.hora || '--:--'}</div>
+                    </div>`;
+                area.appendChild(div);
+            });
+            area.scrollTop = area.scrollHeight;
         });
-        lista.reverse();
-
-        area.innerHTML = "";
-        lista.forEach(m => {
-            const isMe = m.uid === myId;
-            const div = document.createElement('div');
-            div.className = `msg-row ${isMe ? 'row-me' : ''}`;
-            
-            let htmlConteudo = m.texto ? `<div>${m.texto}</div>` : '';
-            if(m.media && m.media.length > 10) {
-                htmlConteudo += `<img src="${m.media}" style="width:100%; border-radius:10px; margin-top:5px; cursor:pointer;" onclick="zoomImg('${m.media}')">`;
-            }
-
-            div.innerHTML = `
-                <img class="chat-avatar" src="${m.pfp || 'https://via.placeholder.com/150'}">
-                <div class="msg-content">
-                    <b style="color:var(--primary); font-size:10px;">${m.usuario}</b><br>
-                    ${htmlConteudo}
-                    <div class="msg-time">${m.hora || '--:--'}</div>
-                </div>`;
-            area.appendChild(div);
-        });
-        area.scrollTop = area.scrollHeight;
-    });
-
-    window.zoomImg = (src) => { 
-        document.getElementById('fs-img').src = src; 
-        document.getElementById('fs-overlay').style.display = 'flex'; 
     };
 
-    // NAVEGAÇÃO E UI
+    // PERFIL E BACKGROUND
+    window.saveProfile = () => {
+        const n = document.getElementById('nameInput').value;
+        if(n) { localStorage.setItem('elite_nome', n); showToast("PERFIL SALVO"); }
+    };
+
+    document.getElementById('pfpInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const base64 = await processImg(file, 0.7, 150);
+            document.getElementById('profImg').src = base64;
+            localStorage.setItem('elite_pfp', base64);
+            showToast("FOTO ATUALIZADA");
+        }
+    };
+
+    document.getElementById('bgInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const base64 = await processImg(file, 0.6, 1000);
+            document.getElementById('bg-custom').src = base64;
+            localStorage.setItem('elite_bg', base64);
+            showToast("FUNDO ATUALIZADO");
+        }
+    };
+
+    // NAVEGAÇÃO
     window.navigateTo = (id) => {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('screen-active'));
         document.getElementById(id).classList.add('screen-active');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('n-' + id.split('-')[0]).classList.add('active');
-        if(id === 'chat-screen') setTimeout(() => { document.getElementById('chat-msgs').scrollTop = 99999; }, 200);
+        if (id === 'chat-screen') syncChat();
     };
 
-    window.changeTheme = (themeName = null) => {
-        const temas = ['default', 'matrix', 'cyber', 'blood', 'ocean', 'lava', 'toxic', 'amethyst', 'void'];
-        let proximo = themeName || temas[(temas.indexOf(document.body.getAttribute('data-theme') || 'default') + 1) % temas.length];
-        document.body.setAttribute('data-theme', proximo);
-        localStorage.setItem('elite_theme', proximo);
-        showToast("PROTOCOLO: " + proximo.toUpperCase());
-    };
-
-    window.saveProfile = () => {
-        localStorage.setItem('elite_nome', document.getElementById('nameInput').value);
-        showToast("IDENTIDADE ATUALIZADA");
-    };
-
-    document.getElementById('pfpInput').onchange = async (e) => {
-        const base64 = await processarArquivo(e.target.files[0], 150);
-        document.getElementById('profImg').src = base64;
-        localStorage.setItem('elite_pfp', base64);
-    };
-
-    document.getElementById('bgInput').onchange = (e) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(e.target.files[0]);
-        reader.onload = (ev) => {
-            document.getElementById('bg-custom').src = ev.target.result;
-            localStorage.setItem('elite_bg', ev.target.result);
-        };
+    window.changeTheme = () => {
+        const themes = ['default', 'matrix', 'cyber', 'blood', 'ocean', 'lava', 'toxic', 'amethyst', 'gold', 'forest', 'void'];
+        let cur = document.body.getAttribute('data-theme') || 'default';
+        let next = themes[(themes.indexOf(cur) + 1) % themes.length];
+        document.body.setAttribute('data-theme', next);
+        localStorage.setItem('elite_theme', next);
+        showToast(next.toUpperCase());
     };
 
     const showToast = (msg) => {
         const t = document.getElementById('toast');
         document.getElementById('theme-label').innerText = msg;
         t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
+        setTimeout(() => t.classList.remove('show'), 2000);
     };
 
-    // ANIMAÇÃO DE FUNDO (ESTRELAS)
+    window.zoomImg = (s) => { document.getElementById('fs-img').src = s; document.getElementById('fs-overlay').style.display='flex'; };
+
+    // PARTÍCULAS (VOLTANDO)
     const cv = document.getElementById('starCanvas');
     const cx = cv.getContext('2d');
-    let st = [];
-    function initSt() {
+    let stars = [];
+    const initStars = () => {
         cv.width = window.innerWidth; cv.height = window.innerHeight;
-        st = []; for(let i=0; i<60; i++) st.push({x: Math.random()*cv.width, y: Math.random()*cv.height, z: Math.random()*cv.width, s: Math.random()*1.2});
-    }
-    function drawSt() {
+        stars = [];
+        for(let i=0; i<150; i++) stars.push({x: Math.random()*cv.width, y: Math.random()*cv.height, z: Math.random()*cv.width, s: Math.random()*1.5});
+    };
+    const drawStars = () => {
         cx.clearRect(0,0,cv.width,cv.height);
         cx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary');
-        st.forEach(s => {
+        stars.forEach(s => {
             let x = (s.x - cv.width/2) * (cv.width/s.z) + cv.width/2;
             let y = (s.y - cv.height/2) * (cv.width/s.z) + cv.height/2;
-            cx.globalAlpha = Math.min(1, (cv.width - s.z) / cv.width);
-            cx.beginPath(); cx.arc(x, y, s.s * (cv.width/s.z) * 0.3, 0, Math.PI*2); cx.fill();
-            s.z -= 0.8; if(s.z <= 0) s.z = cv.width;
+            let sz = (1 - s.z/cv.width) * 3;
+            cx.globalAlpha = (1 - s.z/cv.width);
+            cx.beginPath(); cx.arc(x, y, sz, 0, Math.PI*2); cx.fill();
+            s.z -= 1.5;
+            if(s.z <= 0) s.z = cv.width;
         });
-        requestAnimationFrame(drawSt);
-    }
-    initSt(); drawSt();
+        requestAnimationFrame(drawStars);
+    };
+    window.addEventListener('resize', initStars);
+    initStars(); drawStars();
 
-    // CARREGAR DADOS SALVOS
-    if(localStorage.getItem('elite_theme')) changeTheme(localStorage.getItem('elite_theme'));
-    if(localStorage.getItem('elite_pfp')) document.getElementById('profImg').src = localStorage.getItem('elite_pfp');
+    // INICIALIZAÇÃO
+    if(localStorage.getItem('elite_theme')) document.body.setAttribute('data-theme', localStorage.getItem('elite_theme'));
     if(localStorage.getItem('elite_bg')) document.getElementById('bg-custom').src = localStorage.getItem('elite_bg');
+    if(localStorage.getItem('elite_pfp')) document.getElementById('profImg').src = localStorage.getItem('elite_pfp');
     document.getElementById('nameInput').value = localStorage.getItem('elite_nome') || "";
+    showToast("PRONTO");
 </script>
 </body>
 </html>
